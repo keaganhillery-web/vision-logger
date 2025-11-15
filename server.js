@@ -7,12 +7,12 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Home page
+// Root route (fix for Cannot GET /)
 app.get("/", (req, res) => {
   res.send("Logger online");
 });
 
-// Logging endpoint
+// Log route
 app.post("/log", (req, res) => {
   const data = {
     ip: req.headers["x-forwarded-for"] || req.ip,
@@ -24,6 +24,5 @@ app.post("/log", (req, res) => {
   res.json({ status: "logged" });
 });
 
-// Start
+// Start server
 app.listen(port, () => console.log("Logger running on port " + port));
-
