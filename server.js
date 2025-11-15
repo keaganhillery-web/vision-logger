@@ -1,37 +1,29 @@
-import express from "express";
-import fs from "fs";
-import cors from "cors";
-import fetch from "node-fetch";
-
+const express = require("express");
+const fs = require("fs");
+const cors = require("cors");
 const app = express();
-app.use(express.json());
+const port = process.env.PORT || 3000;
+
 app.use(cors());
+app.use(express.json());
+
+// Home page
+app.get("/", (req, res) => {
+  res.send("Logger online");
+});
 
 // Logging endpoint
-app.post("/log", async (req, res) => {
-  let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+app.post("/log", (req, res) => {
+  const data = {
+    ip: req.headers["x-forwarded-for"] || req.ip,
+    event: req.body.event || "unknown",
+    time: new Date().toString()
+  };
 
-  // Get visitor country
-  let country = "Unknown";
-  try {
-    const response = await fetch(`https://ipapi.co/${ip}/country_name/`);
-    country = await response.text();
-  } catch (err) {}
-
-  const logEntry = `
-IP: ${ip}
-Country: ${country}
-Event: ${req.body.event}
-Time: ${new Date().toISOString()}
-------------------------------
-`;
-
-  fs.appendFileSync("logs.txt", logEntry);
-
-  res.json({ success: true });
+  fs.appendFileSync("logs.txt", JSON.stringify(data) + "\n");
+  res.json({ status: "logged" });
 });
 
-// Start server
-app.listen(3000, () => {
-  console.log("Logger running on port 3000");
-});
+// Start
+app.listen(port, () => console.log("Logger running on port " + port));
+
